@@ -241,6 +241,21 @@ classdef NJM < handle
 			y = [-b/2, -b/2, b/2, b/2, -b/2] + y_0;
 		end
 		
+		function [x_S, y_S] = SteadyState(u_S)
+			% Állandósult bemenet
+			% u = [F_S; g; 0; z_S]
+			
+			% Állandósult állapot
+			% dx/dt = A x_S + B u_S = 0
+			% A x_S = -B u_S
+			% (A^-1) A x_S = (A^-1) (-B) u_S
+			% x_S = (A^-1) (-B) u_S
+			x_S = NJM.A \ (-NJM.B) * u_S;
+			
+			% Állandósult kimenet
+			y_S = NJM.C * x_S + NJM.D * u_S;
+		end
+		
 	end
 	
 end
