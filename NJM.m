@@ -21,6 +21,13 @@ classdef NJM < handle
 		U;
 		X;
 		Y;
+		
+		% Megjelenítés
+		AnimationWindow;
+		M_R;
+		M_0;
+		
+		IsAnimationRunning = false;
 	end
 	
 	properties (Constant)
@@ -36,6 +43,9 @@ classdef NJM < handle
 		k_0 = 150;				% [N/(m/s)]
 		
 		R_K = 0.5;
+		
+		% Lengéscsillapító hossza
+		L_0 = 0.75;
 		
 		% Állapotvektor
 		% x = [v_R; v_0; z_R; z_0]
@@ -129,41 +139,38 @@ classdef NJM < handle
 		end
 		
 		function Animate(this)
-			W = figure(457);
-			delete(W.Children);
+			this.AnimationWindow = figure(457);
+			delete(this.AnimationWindow.Children);
+			this.AnimationWindow.Name = 'Negyedjárműmodell';
+			
 			hold on;
-			
-			function [x, y] = circle(x_0, y_0, R)
-				th = 0:pi/50:2*pi;
-				x = R * cos(th) + x_0;
-				y = R * sin(th) + y_0;
-			end
-			
-			function [x, y] = rectangle(x_0, y_0, a, b)
-				x = [-a/2, a/2, a/2, -a/2, -a/2] + x_0;
-				y = [-b/2, -b/2, b/2, b/2, -b/2] + y_0;
-			end
-			
 			axis equal;
 			set(gca, 'YLim', [-0.2, 1.6]);
-			
-			% Lengéscsillapító hossza
-			L_0 = 0.75;
+			title('Negyedjármű modell');
 			
 			% Útfelület
 			plot([-1, 1], [0, 0], 'k-', 'LineWidth', 3);
 			
-			[x_T, y_T] = rectangle(0, NJM.R_K + L_0, 1, 0.5);
-			M_R = plot(x_T, y_T, 'b-', 'LineWidth', 3);
+			[x_T, y_T] = NJM.Rectangle(0, NJM.R_K + NJM.L_0, 1, 0.5);
+			this.M_R = plot(x_T, y_T, 'b-', 'LineWidth', 3);
 			
-			[x_K, y_K] = circle(0, NJM.R_K, NJM.R_K);
-			M_0 = plot(x_K, y_K, 'k-', 'LineWidth', 3);
+			[x_K, y_K] = NJM.Circle(0, NJM.R_K, NJM.R_K);
+			this.M_0 = plot(x_K, y_K, 'k-', 'LineWidth', 3);
+			
+			% Menü
+			m = uimenu(this.AnimationWindow, 'Text', 'Negyedjárműmodell');
+			uimenu(m, 'Text', 'Animáció', 'MenuSelectedFcn', @this.OnRender);
+		end
+		
+		function OnRender(this, ~, ~)
+			if this.IsAnimationRunning
+				return;
+			end
+			this.IsAnimationRunning = true;
 			
 			fps = 50;
 			dt = 1/fps;	% 20 ms, T_S = 1 ms -> 20-szoros lassítás, ha N = 1
 			N = 20;
-			
-			title('Negyedjármű modell');
 			
 			for i = 1:N:length(this.T)
 				title(sprintf( ...
@@ -175,16 +182,18 @@ classdef NJM < handle
 				z_R = this.X(i, 3);
 				z_0 = this.X(i, 4);
 				
-				[x_T, y_T] = rectangle(0, z_R + NJM.R_K + L_0, 1, 0.5);
-				M_R.XData = x_T;
-				M_R.YData = y_T;
+				[x_T, y_T] = NJM.Rectangle(0, z_R + NJM.R_K + NJM.L_0, 1, 0.5);
+				this.M_R.XData = x_T;
+				this.M_R.YData = y_T;
 				
-				[x_K, y_K] = circle(0, z_0 + NJM.R_K, NJM.R_K);
-				M_0.XData = x_K;
-				M_0.YData = y_K;
+				[x_K, y_K] = NJM.Circle(0, z_0 + NJM.R_K, NJM.R_K);
+				this.M_0.XData = x_K;
+				this.M_0.YData = y_K;
 				
 				drawnow;
 			end
+			
+			this.IsAnimationRunning = false;
 		end
 		
 	end
@@ -219,6 +228,17 @@ classdef NJM < handle
 			
 			njm.Simulate();
 			njm.Plot();
+		end
+			
+		function [x, y] = Circle(x_0, y_0, R)
+			th = 0:pi/50:2*pi;
+			x = R * cos(th) + x_0;
+			y = R * sin(th) + y_0;
+		end
+
+		function [x, y] = Rectangle(x_0, y_0, a, b)
+			x = [-a/2, a/2, a/2, -a/2, -a/2] + x_0;
+			y = [-b/2, -b/2, b/2, b/2, -b/2] + y_0;
 		end
 		
 	end
