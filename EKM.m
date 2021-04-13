@@ -25,8 +25,20 @@ classdef EKM < handle
 		T_ABS = 10e-3;				% [s]
 		
 		% Fékrendszer ...
+		p_V0 = 762;					% [kPa]
+		p_V1 = 2;
+		p_V2 = 1.41;
+		p_V3 = 0.097;
 		
+		V_0 = 0.59;					% [cm^3], a haszontalan térfogat
 		
+		p_0 = 20000;				% [kPa] = 200 bar, a főfékhenger nyomása
+		T_D = 10e-3;				% [s]
+		C_q = 1.4;					% [cm^3/(s*sqrt(kPa))
+		
+		A_F = 4e-4;					% [m^2], a fékmunkahenger keresztmetszete
+		mu_F = 1;
+		R_F = 0.2;					% [m], a féktárcsa közepes sugara
 	end
 	
 	methods (Static)
@@ -65,6 +77,18 @@ classdef EKM < handle
 				else
 					m_f = -M;
 				end
+			end
+		end
+		
+		function p = BrakePressure(V)
+			if V > EKM.V_0
+				p = EKM.p_V0 * ( ...
+					V - EKM.p_V1 * (1 - exp( ...
+						-(V - EKM.p_V3) / EKM.p_V2 ...
+						))...
+					);
+			else
+				p = 0;
 			end
 		end
 		
