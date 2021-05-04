@@ -18,6 +18,8 @@ classdef Vehicle < handle
 		l_1 = 1.1;
 		l_2 = 1.3;
 		
+		b = 1.5;
+		
 		% Légellenállás
 		c_W = 0.3;
 		rho_L = 1.2;
@@ -28,6 +30,10 @@ classdef Vehicle < handle
 		BMW3 = Vehicle( ...
 			'BMW 325i', 1250, 33000, 28000, 1750, 1.2, 1.4 ...
 			);
+	end
+	
+	properties (Dependent)
+		l;
 	end
 	
 	methods
@@ -45,6 +51,10 @@ classdef Vehicle < handle
 			this.I_zz = I_zz;
 			this.l_1 = l_1;
 			this.l_2 = l_2;
+		end
+		
+		function l_0 = get.l(this)
+			l_0 = this.l_1 + this.l_2;
 		end
 		
 		function dxdt = Model(this, t, x)
