@@ -17,6 +17,11 @@ classdef Track < handle
 			this.Y = y;
 		end
 		
+		function this = Shift(this, x, y)
+			this.X = this.X + x;
+			this.Y = this.Y + y;
+		end
+		
 		function Plot(this)
 			figure(780);
 			hold on;
@@ -40,6 +45,7 @@ classdef Track < handle
 		end
 		
 		function t = Circle(r, n)
+			% Track.Circle(100, 200);
 			t = Track.Arc(0, 0, r, n, 0, 360);
 		end
 		

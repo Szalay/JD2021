@@ -1,7 +1,8 @@
 classdef Simulator < handle
 	
 	properties
-		Vehicle(1, 1) Vehicle = Vehicle();
+		Vehicle(:, 1) Vehicle = Vehicle.empty();
+		Track(:, 1) Track = Track.empty();
 		
 		x_0 = [20; 0; 0; 0; 0; 0];
 		T_S = 1e-3;
@@ -24,6 +25,7 @@ classdef Simulator < handle
 		IsSimulated = false;
 		
 		TrackPlot;
+		TrackPath;
 		TrackTitle;
 		TrackCurve;
 		MovingVehicle;
@@ -41,8 +43,13 @@ classdef Simulator < handle
 	
 	methods
 		
-		function this = Simulator()
+		function this = Simulator(vehicle, driver, track)
+			this.Vehicle = vehicle;
+			this.Vehicle.Driver = driver;
 			
+			if nargin >= 3
+				this.Track = track;
+			end
 		end
 		
 		function dxdt = Model(this, t, x)
@@ -117,6 +124,10 @@ classdef Simulator < handle
 		end
 		
 		function CreateGraphicElements(this)
+			this.TrackPath = plot(this.TrackPlot, ...
+				this.Track.X, this.Track.Y, 'k-', 'LineWidth', 3 ...
+				);
+			
 			this.TrackCurve = plot(this.TrackPlot, ...
 				this.X(:, 5), this.X(:, 6), ...
 				'Color', [0.5, 0.5, 0.5], 'LineWidth', 5);
@@ -234,6 +245,21 @@ classdef Simulator < handle
 	end
 	
 	methods (Static)
+		
+		function s = Run()
+			v = Vehicle.BMW3;
+			%t = Track.Circle(100, 200).Shift(0, 100);
+			
+			t = Track( ...
+				[0, 50, 100,    0, -100], ...
+				[0, 25, -50, -150,  100] ...
+				);
+			d = TrackerDriver(t);
+			
+			s = Simulator(v, d, t);
+			s.Simulate();
+			s.Plot();
+		end
 		
 		function [x, y] = DrawVehicle(l_1, l_2, b, psi, delta)
 			r_k = 0.35;
